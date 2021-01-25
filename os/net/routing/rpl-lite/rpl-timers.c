@@ -526,7 +526,7 @@ handle_periodic_timer(void *ptr)
   the meaning of last_advertised_rank changes with time */
   rpl_dag_update_state();
 
-  if(LOG_INFO_ENABLED) {
+  if(LOG_ERR_ENABLED) {
     rpl_neighbor_print_list("Periodic");
     rpl_dag_root_print_links("Periodic");
   }

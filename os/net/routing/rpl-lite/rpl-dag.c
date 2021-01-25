@@ -292,6 +292,7 @@ rpl_dag_update_state(void)
     rpl_neighbor_set_preferred_parent(rpl_neighbor_select_best());
     /* Update rank  */
     curr_instance.dag.rank = rpl_neighbor_rank_via_nbr(curr_instance.dag.preferred_parent);
+    printf("My rank = %u\n", curr_instance.dag.rank);
 
     /* Update better_parent_since flag for each neighbor */
     nbr = nbr_table_head(rpl_neighbors);

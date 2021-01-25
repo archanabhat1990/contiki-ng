@@ -312,12 +312,12 @@ dio_input(void)
     }
   }
 
-  LOG_INFO("received a %s-DIO from ",
+  LOG_ERR("received a %s-DIO from ",
       uip_is_addr_mcast(&UIP_IP_BUF->destipaddr) ? "multicast" : "unicast");
-  LOG_INFO_6ADDR(&from);
-  LOG_INFO_(", instance_id %u, DAG ID ", (unsigned)dio.instance_id);
-  LOG_INFO_6ADDR(&dio.dag_id);
-  LOG_INFO_(", version %u, dtsn %u, rank %u\n",
+  LOG_ERR_6ADDR(&from);
+  LOG_ERR_(", instance_id %u, DAG ID ", (unsigned)dio.instance_id);
+  LOG_ERR_6ADDR(&dio.dag_id);
+  LOG_ERR_(", version %u, dtsn %u, rank %u\n",
          (unsigned)dio.version,
          (unsigned)dio.dtsn,
          (unsigned)dio.rank);
@@ -442,11 +442,11 @@ rpl_icmp6_dio_output(uip_ipaddr_t *uc_addr)
     addr = addr != NULL ? addr : &rpl_multicast_addr;
   }
 
-  LOG_INFO("sending a %s-DIO with rank %u to ",
+  LOG_ERR("sending a %s-DIO with rank %u to ",
          uc_addr != NULL ? "unicast" : "multicast",
          (unsigned)curr_instance.dag.rank);
-  LOG_INFO_6ADDR(addr);
-  LOG_INFO_("\n");
+  LOG_ERR_6ADDR(addr);
+  LOG_ERR_("\n");
 
   uip_icmp6_send(addr, ICMP6_RPL, RPL_CODE_DIO, pos);
 }

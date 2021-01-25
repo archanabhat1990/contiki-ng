@@ -114,6 +114,10 @@ static uint16_t
 nbr_link_metric(rpl_nbr_t *nbr)
 {
   const struct link_stats *stats = rpl_neighbor_get_link_stats(nbr);
+#if 1
+  LOG_ERR_6ADDR(rpl_neighbor_get_ipaddr(nbr));
+  printf(" - Neighbor ETX is %u\n", stats != NULL ? stats->etx : 0xffff);
+#endif /* 1 */
   return stats != NULL ? stats->etx : 0xffff;
 }
 /*---------------------------------------------------------------------------*/
@@ -153,7 +157,7 @@ nbr_path_cost(rpl_nbr_t *nbr)
 #else /* RPL_WITH_MC */
   base = nbr->rank;
 #endif /* RPL_WITH_MC */
-
+ //printf("nbr path cost is %lu\n", MIN((uint32_t)base + link_metric_to_rank(nbr_link_metric(nbr)), 0xffff));
   /* path cost upper bound: 0xffff */
   return MIN((uint32_t)base + link_metric_to_rank(nbr_link_metric(nbr)), 0xffff);
 }
@@ -170,6 +174,10 @@ rank_via_nbr(rpl_nbr_t *nbr)
 
   min_hoprankinc = curr_instance.min_hoprankinc;
   path_cost = nbr_path_cost(nbr);
+
+  const linkaddr_t *lladdr_nbr;
+   lladdr_nbr = rpl_neighbor_get_lladdr(nbr);
+  printf("Neighbor-%04x, Neighbor rank = %u, Min-Hop rank = %u, Path cost = %u, My rank = %lu\n", UIP_HTONS(lladdr_nbr->u16[LINKADDR_SIZE/2-1]), nbr->rank, min_hoprankinc, path_cost, MAX(MIN((uint32_t)nbr->rank + min_hoprankinc, RPL_INFINITE_RANK), path_cost));
 
   /* Rank lower-bound: nbr rank + min_hoprankinc */
   return MAX(MIN((uint32_t)nbr->rank + min_hoprankinc, RPL_INFINITE_RANK), path_cost);
@@ -197,9 +205,17 @@ within_hysteresis(rpl_nbr_t *nbr)
   uint16_t path_cost = nbr_path_cost(nbr);
   uint16_t parent_path_cost = nbr_path_cost(curr_instance.dag.preferred_parent);
 
-  int within_rank_hysteresis = path_cost + RANK_THRESHOLD > parent_path_cost;
-  int within_time_hysteresis = nbr->better_parent_since == 0
+ int within_rank_hysteresis = path_cost + RANK_THRESHOLD > parent_path_cost;
+ // int within_rank_hysteresis = path_cost <= parent_path_cost;
+ int within_time_hysteresis = nbr->better_parent_since == 0
     || (clock_time() - nbr->better_parent_since) <= TIME_THRESHOLD;
+ // int within_time_hysteresis = 1;
+
+#if 0
+  const linkaddr_t *lladdr_nbr;
+  lladdr_nbr = rpl_neighbor_get_lladdr(nbr);
+  printf("Neighbor-%04x, Parent path cost = %d, path cost = %d\n", UIP_HTONS(lladdr_nbr->u16[LINKADDR_SIZE/2-1]), parent_path_cost, path_cost);
+#endif /* 0 */
 
   /* As we want to consider neighbors that are either beyond the rank or time
   hystereses, return 1 here iff the neighbor is within both hystereses. */

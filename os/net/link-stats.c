@@ -72,6 +72,10 @@ NBR_TABLE(struct link_stats, link_stats);
 /* Called at a period of FRESHNESS_HALF_LIFE */
 struct ctimer periodic_timer;
 
+#if LINK_STATS_PACKET_COUNTERS
+void print_and_update_counters(void);
+#endif /* LINK_STATS_PACKET_COUNTERS */
+
 /*---------------------------------------------------------------------------*/
 /* Returns the neighbor's link stats */
 const struct link_stats *
@@ -136,6 +140,11 @@ link_stats_packet_sent(const linkaddr_t *lladdr, int status, int numtx)
   uint16_t packet_etx;
   uint8_t ewma_alpha;
 #endif /* !LINK_STATS_ETX_FROM_PACKET_COUNT */
+
+#if LINK_STATS_PACKET_COUNTERS
+  /* Dump the link stats. */
+  print_and_update_counters();
+#endif /* LINK_STATS_PACKET_COUNTERS */
 
   if(status != MAC_TX_OK && status != MAC_TX_NOACK) {
     /* Do not penalize the ETX when collisions or transmission errors occur. */
@@ -248,7 +257,7 @@ link_stats_input_callback(const linkaddr_t *lladdr)
 /*---------------------------------------------------------------------------*/
 #if LINK_STATS_PACKET_COUNTERS
 /*---------------------------------------------------------------------------*/
-static void
+void
 print_and_update_counters(void)
 {
   struct link_stats *stats;
@@ -262,6 +271,13 @@ print_and_update_counters(void)
              c->num_packets_tx, c->num_packets_acked, c->num_packets_rx);
     LOG_INFO_LLADDR(link_stats_get_lladdr(stats));
     LOG_INFO_("\n");
+
+    /* Dump the absolute link stats. */
+    struct link_packet_counter *t = &stats->cnt_total;
+    log_lladdr_compact(link_stats_get_lladdr(stats));
+    printf(" - num packets: tx=%u ack=%u rx=%u",
+             t->num_packets_tx, t->num_packets_acked, t->num_packets_rx);
+    printf("\n");
 
     stats->cnt_total.num_packets_tx += stats->cnt_current.num_packets_tx;
     stats->cnt_total.num_packets_acked += stats->cnt_current.num_packets_acked;

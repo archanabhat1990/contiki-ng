@@ -95,6 +95,8 @@ nbr_link_metric(rpl_nbr_t *nbr)
 {
   /* OF0 operates without metric container; the only metric we have is ETX */
   const struct link_stats *stats = rpl_neighbor_get_link_stats(nbr);
+//  LOG_ERR_6ADDR(rpl_neighbor_get_ipaddr(nbr));
+ //printf(" - Neighbor ETX is %u\n", stats != NULL ? stats->etx : 0xffff);
   return stats != NULL ? stats->etx : 0xffff;
 }
 /*---------------------------------------------------------------------------*/
@@ -115,6 +117,7 @@ nbr_path_cost(rpl_nbr_t *nbr)
   if(nbr == NULL) {
     return 0xffff;
   }
+//   printf("Path cost is %lu\n", MIN((uint32_t)nbr->rank + nbr_link_metric(nbr), 0xffff) );
   /* path cost upper bound: 0xffff */
   return MIN((uint32_t)nbr->rank + nbr_link_metric(nbr), 0xffff);
 }
@@ -125,6 +128,11 @@ rank_via_nbr(rpl_nbr_t *nbr)
   if(nbr == NULL) {
     return RPL_INFINITE_RANK;
   } else {
+	  const linkaddr_t *lladdr_nbr;
+	  lladdr_nbr = rpl_neighbor_get_lladdr(nbr);
+	  	  printf("Neighbor-%04x, Neighbor rank = %u, Rank increase = %u, Infinite Rank = %u, My rank = %lu\n",
+	  			UIP_HTONS(lladdr_nbr->u16[LINKADDR_SIZE/2-1]),
+	  			  nbr->rank, nbr_rank_increase(nbr), RPL_INFINITE_RANK, MIN((uint32_t)nbr->rank + nbr_rank_increase(nbr), RPL_INFINITE_RANK));
     return MIN((uint32_t)nbr->rank + nbr_rank_increase(nbr), RPL_INFINITE_RANK);
   }
 }

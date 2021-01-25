@@ -147,9 +147,9 @@ rpl_neighbor_print_list(const char *str)
     int curr_rank = curr_instance.dag.rank;
     rpl_nbr_t *nbr = nbr_table_head(rpl_neighbors);
 
-    LOG_INFO("nbr: own state, addr ");
-    LOG_INFO_6ADDR(rpl_get_global_address());
-    LOG_INFO_(", DAG state: %s, MOP %u OCP %u rank %u max-rank %u, dioint %u, nbr count %u (%s)\n",
+    LOG_ERR("nbr: own state, addr ");
+    LOG_ERR_6ADDR(rpl_get_global_address());
+    LOG_ERR_(", DAG state: %s, MOP %u OCP %u rank %u max-rank %u, dioint %u, nbr count %u (%s)\n",
         rpl_dag_state_to_str(curr_instance.dag.state),
         curr_instance.mop, curr_instance.of->ocp, curr_rank,
         max_acceptable_rank(),
@@ -157,10 +157,10 @@ rpl_neighbor_print_list(const char *str)
     while(nbr != NULL) {
       char buf[120];
       rpl_neighbor_snprint(buf, sizeof(buf), nbr);
-      LOG_INFO("nbr: %s\n", buf);
+      LOG_ERR("nbr: %s\n", buf);
       nbr = nbr_table_next(rpl_neighbors, nbr);
     }
-    LOG_INFO("nbr: end of list\n");
+    LOG_ERR("nbr: end of list\n");
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -296,11 +296,11 @@ void
 rpl_neighbor_set_preferred_parent(rpl_nbr_t *nbr)
 {
   if(curr_instance.dag.preferred_parent != nbr) {
-    LOG_INFO("parent switch: ");
-    LOG_INFO_6ADDR(rpl_neighbor_get_ipaddr(curr_instance.dag.preferred_parent));
+    LOG_ERR("parent switch: ");
+    LOG_ERR_6ADDR(rpl_neighbor_get_ipaddr(curr_instance.dag.preferred_parent));
     LOG_INFO_(" -> ");
-    LOG_INFO_6ADDR(rpl_neighbor_get_ipaddr(nbr));
-    LOG_INFO_("\n");
+    LOG_ERR_6ADDR(rpl_neighbor_get_ipaddr(nbr));
+    LOG_ERR_("\n");
 
 #ifdef RPL_CALLBACK_PARENT_SWITCH
     RPL_CALLBACK_PARENT_SWITCH(curr_instance.dag.preferred_parent, nbr);
@@ -387,8 +387,14 @@ best_parent(int fresh_only)
     }
 #endif /* UIP_ND6_SEND_NS */
 
+//    const linkaddr_t *lladdr_best,*lladdr_nbr;
+//    lladdr_best = rpl_neighbor_get_lladdr(best);
+//    lladdr_nbr = rpl_neighbor_get_lladdr(nbr);
+//    printf("Selecting the new best between - LL-%04x & LL-%04x\n", UIP_HTONS(lladdr_best->u16[LINKADDR_SIZE/2-1]), UIP_HTONS(lladdr_nbr->u16[LINKADDR_SIZE/2-1]));
     /* Now we have an acceptable parent, check if it is the new best */
     best = curr_instance.of->best_parent(best, nbr);
+//    lladdr_best = rpl_neighbor_get_lladdr(best);
+//    printf("New best - LL-%04x\n", UIP_HTONS(lladdr_best->u16[LINKADDR_SIZE/2-1]));
   }
 
   return best;
